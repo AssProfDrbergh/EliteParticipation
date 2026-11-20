@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elite Participation Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a single reading column for text, widening to a full-width band for each interactive figure. */
+:root {
+  color-scheme: light;
+  --bg: #f6f7f8;
+  --surface: #fcfcfb;
+  --ink: #0f1419;
+  --ink-2: #4b5259;
+  --muted: #858b91;
+  --line: #e1e3e4;
+  --axis: #c3c6c8;
+  --accent: #1c5cab;
+  --accent-wash: rgba(28,92,171,0.09);
+  --seq: #1c5cab;
+  --on-seq: #ffffff;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --s7:#6250d6; --s8:#e34948;
+  --other: #c3c2b7;
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0e1012; --surface: #17191b; --ink: #eef0f1; --ink-2: #b9bfc4; --muted: #868c91;
+    --line: #2a2d30; --axis: #3a3e42; --accent: #6da7ec; --accent-wash: rgba(109,167,236,0.12); --seq: #5598e7; --on-seq: #0e1012;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#0ca30c; --s7:#9085e9; --s8:#e66767;
+    --other: #55554f;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e1012; --surface: #17191b; --ink: #eef0f1; --ink-2: #b9bfc4; --muted: #868c91;
+  --line: #2a2d30; --axis: #3a3e42; --accent: #6da7ec; --accent-wash: rgba(109,167,236,0.12); --seq: #5598e7; --on-seq: #0e1012;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#0ca30c; --s7:#9085e9; --s8:#e66767;
+  --other: #55554f;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--font-body); }
+a { color: var(--accent); text-underline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; margin: 0; letter-spacing: -0.005em; }
+h1 { font-size: clamp(30px, 4.6vw, 46px); line-height: 1.1; }
+h2 { font-size: clamp(24px, 3vw, 31px); line-height: 1.2; }
+h3 { font-family: var(--font-body); font-size: 14px; font-weight: 600; }
+p { margin: 0; }
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+.prose { max-width: 68ch; display: grid; gap: 14px; color: var(--ink-2); }
+.prose strong { color: var(--ink); font-weight: 600; }
+header.top { border-bottom: 1px solid var(--line); background: var(--surface); }
+header.top .wrap { padding-top: 40px; padding-bottom: 32px; display: grid; gap: 18px; }
+.kicker { font-size: 13px; color: var(--muted); letter-spacing: 0.02em; }
+.cite { font-size: 14px; color: var(--ink-2); }
+nav.toc { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+nav.toc .wrap { display: flex; gap: 6px 20px; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; font-size: 14px; }
+nav.toc a { color: var(--ink-2); text-decoration: none; }
+nav.toc a:hover { color: var(--accent); }
+section { padding: 52px 0 12px; scroll-margin-top: 48px; }
+section > .wrap { display: grid; gap: 22px; grid-template-columns: minmax(0, 1fr); }
+.findings { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.finding { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; }
+.finding .big { font-size: 26px; font-weight: 600; line-height: 1.15; }
+.finding .lab { font-size: 13.5px; color: var(--ink-2); line-height: 1.4; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; font-size: 14px; }
+.controls label { color: var(--ink-2); }
+.seg { display: inline-flex; border: 1px solid var(--axis); border-radius: 7px; overflow: hidden; }
+.seg button { font: inherit; font-size: 13.5px; border: 0; background: transparent; color: var(--ink-2); padding: 6px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--axis); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+:root[data-theme="dark"] .seg button[aria-pressed="true"] { color: #0e1012; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg button[aria-pressed="true"] { color: #0e1012; } }
+select, input[type="search"], input[type="range"] { font: inherit; font-size: 14px; color: var(--ink); }
+select, input[type="search"] { background: var(--surface); border: 1px solid var(--axis); border-radius: 7px; padding: 6px 10px; }
+input[type="range"] { accent-color: var(--accent); width: min(360px, 100%); }
+.note { font-size: 13px; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+.sw.line { height: 3px; width: 16px; border-radius: 2px; }
+/* small multiples */
+.multiples { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 980px) { .multiples { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+@media (max-width: 640px) { .bar-row { grid-template-columns: 110px 1fr 30px; } .multiples { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+.mini { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 10px 4px; cursor: pointer; text-align: left; font: inherit; color: inherit; display: grid; gap: 2px; }
+.mini:hover { border-color: var(--axis); box-shadow: 0 1px 0 var(--line); }
+.mini .t { font-size: 13.5px; font-weight: 600; }
+.mini .v { font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.mini svg { width: 100%; height: auto; display: block; overflow: visible; }
+svg text { font-family: var(--font-body); }
+.ax text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.base { stroke: var(--axis); stroke-width: 1; }
+/* domain explorer */
+.two { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 18px; }
+@media (max-width: 860px) { .two { grid-template-columns: 1fr; } }
+.stats { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; color: var(--ink-2); }
+.stats b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.bars { display: grid; gap: 5px; font-size: 13.5px; }
+.bar-row { display: grid; grid-template-columns: 150px 1fr 34px; gap: 10px; align-items: center; }
+.bar-row .n { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.bar-row .track { height: 12px; }
+.bar-row .fill { height: 12px; border-radius: 0 4px 4px 0; background: var(--seq); min-width: 2px; }
+.bar-row .lab { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.listbox { max-height: 430px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--ink-2); position: sticky; top: 0; background: var(--surface); z-index: 1; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+th button { all: unset; cursor: pointer; }
+th button:focus-visible { outline: 2px solid var(--accent); }
+.cdot { display: inline-flex; align-items: center; gap: 7px; }
+/* heatmap */
+.hm-wrap { overflow-x: auto; }
+.hm { border-collapse: separate; border-spacing: 2px; font-size: 12.5px; width: auto; min-width: 100%; }
+.hm th, .hm td { border: 0; padding: 0; }
+.hm thead th { font-weight: 500; color: var(--ink-2); vertical-align: bottom; padding: 0 2px 6px; text-align: center; font-size: 12px; line-height: 1.25; background: transparent; position: static; }
+.hm tbody th { font-weight: 400; color: var(--ink); text-align: left; padding: 0 10px 0 0; white-space: nowrap; background: transparent; position: static; cursor: pointer; }
+.hm tbody th:hover { color: var(--accent); }
+.hm td.cell { width: 74px; height: 22px; text-align: center; border-radius: 3px; font-variant-numeric: tabular-nums; }
+.hm td.cnt { text-align: right; padding: 0 0 0 8px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.hm tr.reg th { padding: 10px 0 2px; font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; cursor: default; }
+.hm tr.sel th { color: var(--accent); font-weight: 600; }
+.profile svg { width: 100%; height: auto; display: block; }
+.btn { font: inherit; font-size: 14px; border: 1px solid var(--axis); background: var(--surface); color: var(--ink); border-radius: 7px; padding: 7px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.dl { display: flex; flex-wrap: wrap; gap: 10px; }
+.method { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.method .panel { display: grid; gap: 10px; align-content: start; font-size: 14.5px; color: var(--ink-2); }
+.method ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.formula { font-family: var(--font-body); font-size: 15px; color: var(--ink); background: var(--bg); border-radius: 6px; padding: 8px 12px; font-variant-numeric: tabular-nums; }
+footer { padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
+#tip { position: fixed; pointer-events: none; z-index: 20; background: var(--surface); color: var(--ink); border: 1px solid var(--axis); border-radius: 7px; padding: 8px 10px; font-size: 13px; line-height: 1.4; box-shadow: 0 4px 16px rgba(0,0,0,0.12); max-width: 260px; opacity: 0; transition: opacity .08s; }
+#tip .h { font-weight: 600; margin-bottom: 2px; }
+#tip .r { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.loading { padding: 40px; text-align: center; color: var(--muted); }
+.hit { fill: transparent; cursor: pointer; }
+.empty { color: var(--muted); font-size: 14px; padding: 12px 0; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="kicker">Interactive companion to a paper in Social Sciences &amp; Humanities Open, vol. 14 (2026)</div>
+    <h1>Elite Participation as a Measure of Global Development</h1>
+    <div class="prose">
+      <p>If world poverty and income gaps between countries have really shrunk, more countries should be able to compete at the global frontier of activities that need surplus resources, health, infrastructure and international networks. This site lets you explore who has made it into ten global elite rankings since 1970, from chess and tennis to supercomputers and fine dining, and how the number of countries with a national football team has grown.</p>
+    </div>
+    <div class="cite">Andreas Bergh (2026). <a href="https://doi.org/10.1016/j.ssaho.2026.104050">doi:10.1016/j.ssaho.2026.104050</a> · Data and code: <a href="https://doi.org/10.5281/zenodo.24000711">doi:10.5281/zenodo.24000711</a></div>
+  </div>
+</header>
+<nav class="toc" aria-label="Sections">
+  <div class="wrap">
+    <a href="#trends">Trends</a>
+    <a href="#domains">Inside each ranking</a>
+    <a href="#countries">Countries</a>
+    <a href="#football">Football</a>
+    <a href="#method">Method and data</a>
+  </div>
+</nav>
+
+<main>
+<section id="trends">
+  <div class="wrap">
+    <h2>Elite sets have become more diverse</h2>
+    <div class="findings" id="findings"></div>
+    <div class="prose"><p>Each panel shows one elite set. Concentration is the Herfindahl index and diversity the Shannon index, both adjusted for the number of countries in the world, so they lie between 0 and 1. Hollow markers are years with a shorter list. Click a panel to look inside that ranking.</p></div>
+    <div class="controls">
+      <span id="metric-label">Show</span>
+      <div class="seg" role="group" aria-labelledby="metric-label" id="metric">
+        <button type="button" data-m="H" aria-pressed="true">Concentration (Herfindahl)</button>
+        <button type="button" data-m="S" aria-pressed="false">Diversity (Shannon)</button>
+        <button type="button" data-m="N" aria-pressed="false">Countries represented</button>
+      </div>
+    </div>
+    <div class="multiples" id="multiples"><div class="loading">Loading data…</div></div>
+    <p class="note" id="metric-note"></p>
+  </div>
+</section>
+
+<section id="domains">
+  <div class="wrap">
+    <h2>Inside each ranking</h2>
+    <div class="prose"><p>The bars show each country's share of the elite set in every year. The seven countries with the most entries over the whole period get their own colour; the rest are grouped as other countries. Click a bar or move the slider to see the full list for that year.</p></div>
+    <div class="controls">
+      <label for="dom-select">Ranking</label>
+      <select id="dom-select"></select>
+    </div>
+    <div class="panel" style="display:grid; gap:14px;">
+      <div class="legend" id="dom-legend"></div>
+      <div id="dom-stack"></div>
+    </div>
+    <div class="controls">
+      <label for="dom-year">Year</label>
+      <input type="range" id="dom-year" min="0" max="1" step="1" value="0">
+      <b id="dom-year-label" style="font-variant-numeric: tabular-nums;"></b>
+    </div>
+    <div class="stats" id="dom-stats"></div>
+    <div class="two">
+      <div class="panel" style="display:grid; gap:10px; align-content:start;">
+        <h3 id="dom-bars-title">Entries by country</h3>
+        <div class="bars" id="dom-bars"></div>
+      </div>
+      <div class="panel" style="display:grid; gap:10px; align-content:start;">
+        <h3 id="dom-list-title">Full list</h3>
+        <div class="listbox" id="dom-list"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="countries">
+  <div class="wrap">
+    <h2>Which countries reach the elite</h2>
+    <div class="prose"><p>The table shows, for one snapshot year, how many entries each country has in each elite set. Shading shows the country's share of that set, so one of 25 tennis players and 20 of 500 supercomputers both read as 4 percent. Where a ranking was not published in the snapshot year, the nearest year is used and shown in the column header. Click a country for its full history.</p></div>
+    <div class="controls">
+      <label for="snap-year">Snapshot year</label>
+      <select id="snap-year"></select>
+      <label for="snap-sort">Sort by</label>
+      <select id="snap-sort">
+        <option value="domains">Number of rankings</option>
+        <option value="region">Region</option>
+        <option value="name">Name</option>
+      </select>
+      <span class="note" id="snap-summary"></span>
+    </div>
+    <div class="panel hm-wrap"><table class="hm" id="heatmap"></table></div>
+    <div class="controls">
+      <label for="country-select">Country profile</label>
+      <select id="country-select"></select>
+    </div>
+    <div class="panel profile" style="display:grid; gap:10px;">
+      <h3 id="profile-title"></h3>
+      <p class="note" id="profile-note"></p>
+      <div id="profile"></div>
+    </div>
+  </div>
+</section>
+
+<section id="football">
+  <div class="wrap">
+    <h2>Almost every country now has a national football team, women's included</h2>
+    <div class="prose"><p>A national team is a far lower bar than a place in a top-25 ranking. For men, the measure is FIFA membership. For women, it is the share of countries whose team had played an official international match (up to 2000), and from 2005 the share with a team in the FIFA Women's World Ranking. Shares can exceed 100 percent because some FIFA members are not sovereign states, and the United Kingdom has four teams.</p></div>
+    <div class="panel" style="display:grid; gap:12px;">
+      <div class="legend" id="fb-legend"></div>
+      <div id="fb-chart"></div>
+    </div>
+    <div class="controls">
+      <label for="fb-search">Find a team</label>
+      <input type="search" id="fb-search" placeholder="Country or FIFA code">
+      <span class="note" id="fb-count"></span>
+    </div>
+    <div class="panel" style="padding:0;"><div class="listbox" style="border:0; max-height:380px;" id="fb-table"></div></div>
+  </div>
+</section>
+
+<section id="method">
+  <div class="wrap">
+    <h2>Method and data</h2>
+    <div class="method">
+      <div class="panel">
+        <h3>Indices</h3>
+        <p>With p<sub>i</sub> the share of country i in the elite set and N the number of sovereign countries in the world that year (166 in 1970, 198 in 2025):</p>
+        <div class="formula">H = Σ p<sub>i</sub>²,&nbsp;&nbsp; H* = (H − 1/N) / (1 − 1/N)</div>
+        <div class="formula">S = −Σ p<sub>i</sub> ln p<sub>i</sub>,&nbsp;&nbsp; S* = S / ln N</div>
+        <p>Lower H* means less concentration; higher S* means more diversity. The unadjusted indices give the same picture (Appendix Table A2 of the paper).</p>
+      </div>
+      <div class="panel">
+        <h3>Coding</h3>
+        <ul>
+          <li>Country is nationality for players, venue for restaurants and institutional location for supercomputers.</li>
+          <li>Tennis players are coded by nationality at the time, so the Soviet Union, Czechoslovakia and Yugoslavia appear before they dissolved.</li>
+          <li>West Germany is shown as Germany, as in the source data; East Germany appears separately.</li>
+          <li>In golf, England, Scotland, Wales and Northern Ireland are coded as the United Kingdom.</li>
+          <li>Series start when a ranking exists: men's golf 1986, women's golf 2006, restaurants 2004, supercomputers 1993 (top 50) and 1995 (top 500).</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Limitations</h3>
+        <ul>
+          <li>The poorest countries rarely appear in any elite set, and Africa is almost absent. The indicators describe how elite capacity spreads beyond traditional centres more than progress at the bottom.</li>
+          <li>Each domain has its own conditions, such as snow for alpine skiing and FIFA development funding for football.</li>
+          <li>Nationality does not show where skills were developed, and the restaurant list rests on the judgement of a voting panel.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Download</h3>
+        <p>The data behind this site, in long format. The full replication package, with a source link for every entry, is on <a href="https://doi.org/10.5281/zenodo.24000711">Zenodo</a> (data CC BY 4.0, code MIT).</p>
+        <div class="dl">
+          <button class="btn" type="button" data-dl="entries">Entries (CSV)</button>
+          <button class="btn" type="button" data-dl="indices">Indices (CSV)</button>
+          <button class="btn" type="button" data-dl="football">Football (CSV)</button>
+        </div>
+        <p class="note" id="dl-status" role="status"></p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<footer><div class="wrap">Bergh, A. (2026). Elite participation as a measure of global development. <i>Social Sciences &amp; Humanities Open</i>, 14, 104050. Sources: FIDE, ATP, WTA, FIS, Official World Golf Ranking, Rolex Women's World Golf Rankings, The World's 50 Best Restaurants, TOP500, FIFA.</div></footer>
+<div id="tip" role="tooltip"></div>
+
+<script>
+(function () {
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+const $ = (s) => document.querySelector(s);
+const el = (tag, attrs = {}, parent) => {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+};
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const f2 = (x) => x.toFixed(2);
+const pct = (x) => Math.round(x * 100) + "%";
+
+// ---------- tooltip
+const tip = $("#tip");
+function showTip(ev, html) {
+  tip.innerHTML = html; tip.style.opacity = 1;
+  const r = tip.getBoundingClientRect();
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - 14;
+  tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+}
+function hideTip() { tip.style.opacity = 0; }
+
+let D, C, DOM, byId;
+fetch("data.json").then((r) => r.json()).then((d) => { D = d; init(); }).catch(() => {
+  $("#multiples").innerHTML = '<div class="loading">The data file could not be loaded. Open this page from a web server, not as a local file.</div>';
+});
+
+function init() {
+  C = D.countries.map(([name, region]) => ({ name, region }));
+  DOM = D.domains;
+  byId = Object.fromEntries(DOM.map((d) => [d.id, d]));
+  DOM.forEach((d) => {
+    d.idx = D.indices[d.id].map(([year, slots, n, nw, H, S]) => ({ year, slots, n, nw, H, S }));
+    d.years = d.idx.map((r) => r.year);
+    d.full = Math.max(...d.idx.map((r) => r.slots));
+  });
+  renderFindings();
+  initTrends(); initDomain(); initCountries(); initFootball(); initDownloads();
+}
+
+function renderFindings() {
+  const imp = DOM.filter((d) => { const a = d.idx[0], b = d.idx[d.idx.length - 1]; return b.H < a.H && b.S > a.S; }).length;
+  const ch = byId.chess.idx, sc = byId.supercomputers_top500.idx;
+  const fb = D.football.shares, last = fb[fb.length - 1];
+  const items = [
+    [`${imp} of ${DOM.length}`, "elite sets became less concentrated and more diverse. Men's golf is the exception."],
+    [`${f2(ch[0].H)} → ${f2(ch[ch.length - 1].H)}`, `Concentration in chess, ${ch[0].year}–${ch[ch.length - 1].year}: the largest fall. In 1970 the Soviet Union had 16 of the top 25.`],
+    [`${sc[0].n} → ${sc[sc.length - 1].n}`, `countries hosting a top-500 supercomputer, ${sc[0].year}–${sc[sc.length - 1].year}.`],
+    [`${pct(fb[0].women_share_first_match)} → ${pct(last.women_share_active)}`, `share of countries with a women's national football team, ${fb[0].year}–${last.year}.`],
+  ];
+  $("#findings").innerHTML = items.map(([b, l]) => `<div class="finding"><div class="big">${b}</div><div class="lab">${l}</div></div>`).join("");
+}
+
+// ---------- 1. Trends small multiples
+let metric = "H";
+const METRIC = {
+  H: { key: "H", lo: 0, hi: 0.5, ticks: [0, 0.25, 0.5], fmt: f2, name: "Concentration (adjusted Herfindahl)", note: "Lower values mean less concentration. All panels share one scale." },
+  S: { key: "S", lo: 0, hi: 0.6, ticks: [0, 0.3, 0.6], fmt: f2, name: "Diversity (adjusted Shannon)", note: "Higher values mean more diversity. All panels share one scale." },
+  N: { key: "n", lo: 0, hi: 45, ticks: [0, 20, 40], fmt: (x) => String(x), name: "Countries represented", note: "Number of countries with at least one entry. All panels share one scale; the top 500 supercomputers is a much larger set than the others." },
+};
+function initTrends() {
+  $("#metric").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    metric = b.dataset.m;
+    $("#metric").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+    drawTrends();
+  });
+  drawTrends();
+}
+function drawTrends() {
+  const M = METRIC[metric], host = $("#multiples");
+  host.innerHTML = "";
+  $("#metric-note").textContent = M.note;
+  const W = 200, H = 120, ml = 26, mr = 8, mt = 8, mb = 18;
+  const x = (y) => ml + (y - 1970) / 55 * (W - ml - mr);
+  const y = (v) => mt + (1 - (v - M.lo) / (M.hi - M.lo)) * (H - mt - mb);
+  DOM.forEach((d) => {
+    const pts = d.idx, a = pts[0], b = pts[pts.length - 1];
+    const btn = document.createElement("button");
+    btn.className = "mini"; btn.type = "button";
+    btn.setAttribute("aria-label", `${d.label}: ${M.name} ${M.fmt(a[M.key])} in ${a.year}, ${M.fmt(b[M.key])} in ${b.year}. Open in ranking explorer.`);
+    btn.innerHTML = `<span class="t">${esc(d.label)}</span><span class="v">${a.year}: ${M.fmt(a[M.key])} → ${b.year}: ${M.fmt(b[M.key])}</span>`;
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-hidden": "true" }, btn);
+    const g = el("g", { class: "grid" }, svg), ax = el("g", { class: "ax" }, svg);
+    M.ticks.forEach((t) => {
+      if (t !== M.lo) el("line", { x1: ml, x2: W - mr, y1: y(t), y2: y(t) }, g);
+      el("text", { x: ml - 5, y: y(t) + 3.5, "text-anchor": "end" }, ax).textContent = M.fmt(t);
+    });
+    el("line", { class: "base", x1: ml, x2: W - mr, y1: y(M.lo), y2: y(M.lo) }, svg);
+    [1970, 2000, 2025].forEach((t) => { el("text", { x: x(t), y: H - 4, "text-anchor": t === 1970 ? "start" : t === 2025 ? "end" : "middle" }, ax).textContent = t; });
+    el("path", { d: pts.map((p, i) => `${i ? "L" : "M"}${x(p.year)},${y(p[M.key])}`).join(""), fill: "none", style: "stroke:var(--s1)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+    pts.forEach((p) => {
+      const short = p.slots < d.full;
+      el("circle", { cx: x(p.year), cy: y(p[M.key]), r: 3.4, "stroke-width": 1.6, style: short ? "fill:var(--surface);stroke:var(--s1)" : "fill:var(--s1);stroke:var(--surface)" }, svg);
+      const hit = el("circle", { class: "hit", cx: x(p.year), cy: y(p[M.key]), r: 9 }, svg);
+      hit.addEventListener("mousemove", (ev) => showTip(ev, `<div class="h">${esc(d.label)}, ${p.year}</div><div class="r">Concentration ${f2(p.H)} · Diversity ${f2(p.S)}</div><div class="r">${p.n} countries · top ${p.slots}${short ? " (shorter list)" : ""}</div>`));
+      hit.addEventListener("mouseleave", hideTip);
+    });
+    btn.addEventListener("click", () => { hideTip(); setDomain(d.id); $("#domains").scrollIntoView(); });
+    host.appendChild(btn);
+  });
+}
+
+// ---------- 2. Domain explorer
+let curDom = "chess", curYearIdx = 0, domColors = {};
+function initDomain() {
+  const s = $("#dom-select");
+  s.innerHTML = DOM.map((d) => `<option value="${d.id}">${esc(d.label)}</option>`).join("");
+  s.addEventListener("change", () => setDomain(s.value));
+  $("#dom-year").addEventListener("input", (e) => { curYearIdx = +e.target.value; drawDomainYear(); highlightStack(); });
+  setDomain("chess");
+}
+function setDomain(id) {
+  curDom = id; $("#dom-select").value = id;
+  const d = byId[id];
+  // top 7 countries by total entries across years -> fixed colours
+  const tot = {};
+  d.years.forEach((y) => D.entries[id][y].forEach((e) => { tot[e[3]] = (tot[e[3]] || 0) + 1 / D.entries[id][y].length; }));
+  const top = Object.keys(tot).sort((a, b) => tot[b] - tot[a]).slice(0, 7).map(Number);
+  domColors = {}; top.forEach((c, i) => (domColors[c] = `var(--s${i + 1})`));
+  $("#dom-legend").innerHTML = top.map((c) => `<span><i class="sw" style="background:${domColors[c]}"></i>${esc(C[c].name)}</span>`).join("") + `<span><i class="sw" style="background:var(--other)"></i>Other countries</span>`;
+  const r = $("#dom-year"); r.max = d.years.length - 1; curYearIdx = d.years.length - 1; r.value = curYearIdx;
+  r.setAttribute("aria-valuetext", d.years[curYearIdx]);
+  drawStack(); drawDomainYear(); highlightStack();
+}
+function shares(id, y) {
+  const list = D.entries[id][y], cnt = {};
+  list.forEach((e) => (cnt[e[3]] = (cnt[e[3]] || 0) + 1));
+  return { cnt, total: list.length };
+}
+let stackCols = [];
+function drawStack() {
+  const d = byId[curDom], host = $("#dom-stack"); host.innerHTML = "";
+  const n = d.years.length, W = 1080, H = 300, ml = 40, mr = 8, mt = 8, mb = 24;
+  const band = (W - ml - mr) / n, bw = Math.min(band - 2, 64);
+  const y = (v) => mt + (1 - v) * (H - mt - mb);
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%", role: "img", "aria-label": `Country shares of the ${d.label} elite set by year` }, host);
+  svg.style.display = "block"; svg.style.height = "auto";
+  const g = el("g", { class: "grid" }, svg), ax = el("g", { class: "ax" }, svg);
+  [0.25, 0.5, 0.75, 1].forEach((t) => el("line", { x1: ml, x2: W - mr, y1: y(t), y2: y(t) }, g));
+  [0, 0.5, 1].forEach((t) => (el("text", { x: ml - 6, y: y(t) + 4, "text-anchor": "end" }, ax).textContent = pct(t)));
+  stackCols = [];
+  d.years.forEach((yr, i) => {
+    const { cnt, total } = shares(curDom, yr);
+    const cx = ml + band * i + band / 2;
+    const col = el("g", { "data-i": i, style: "cursor:pointer" }, svg);
+    const keys = Object.keys(domColors).map(Number).filter((c) => cnt[c]);
+    const other = total - keys.reduce((s, c) => s + cnt[c], 0);
+    const segs = keys.map((c) => ({ c, v: cnt[c] })); if (other > 0) segs.push({ c: -1, v: other });
+    let acc = 0;
+    segs.forEach((s, j) => {
+      const y0 = y(acc / total), y1 = y((acc + s.v) / total); acc += s.v;
+      const gap = j < segs.length - 1 ? 2 : 0;
+      const hgt = Math.max(0, y0 - y1 - gap);
+      const rect = el("rect", { x: cx - bw / 2, y: y1 + (j === segs.length - 1 ? 0 : 0), width: bw, height: hgt, rx: j === segs.length - 1 ? 3 : 0, style: `fill:${s.c < 0 ? "var(--other)" : domColors[s.c]}` }, col);
+      const label = s.c < 0 ? `Other countries (${Object.keys(cnt).length - keys.length})` : C[s.c].name;
+      rect.addEventListener("mousemove", (ev) => showTip(ev, `<div class="h">${esc(label)}, ${yr}</div><div class="r">${s.v} of ${total} ${d.unit} · ${pct(s.v / total)}</div>`));
+      rect.addEventListener("mouseleave", hideTip);
+    });
+    const short = total < d.full;
+    el("text", { x: cx, y: H - 6, "text-anchor": "middle", style: short ? "font-style:italic" : "" }, ax).textContent = n > 14 ? (i % 2 === 0 || i === n - 1 ? yr : "") : yr;
+    const sel = el("rect", { x: cx - band / 2, y: mt - 4, width: band, height: H - mt - mb + 8, rx: 5, fill: "none", "stroke-width": 1.5, style: "stroke:var(--accent)", opacity: 0 }, svg);
+    col.addEventListener("click", () => { curYearIdx = i; $("#dom-year").value = i; drawDomainYear(); highlightStack(); });
+    stackCols.push(sel);
+  });
+}
+function highlightStack() { stackCols.forEach((r, i) => r.setAttribute("opacity", i === curYearIdx ? 1 : 0)); }
+function drawDomainYear() {
+  const d = byId[curDom], yr = d.years[curYearIdx], p = d.idx[curYearIdx];
+  $("#dom-year-label").textContent = yr;
+  $("#dom-year").setAttribute("aria-valuetext", yr);
+  const { cnt, total } = shares(curDom, yr);
+  $("#dom-stats").innerHTML = `<span>Elite set <b>top ${total}</b>${total < d.full ? " (shorter list)" : ""}</span><span>Countries <b>${p.n}</b></span><span>Concentration <b>${f2(p.H)}</b></span><span>Diversity <b>${f2(p.S)}</b></span><span class="note">${esc(d.elite)}. Source: <a href="${d.url}">${esc(d.source)}</a></span>`;
+  const rows = Object.keys(cnt).map(Number).sort((a, b) => cnt[b] - cnt[a] || C[a].name.localeCompare(C[b].name));
+  const max = cnt[rows[0]];
+  $("#dom-bars-title").textContent = `${d.unit[0].toUpperCase() + d.unit.slice(1)} by country, ${yr}`;
+  $("#dom-bars").innerHTML = rows.map((c) => `<div class="bar-row"><span class="lab cdot"><i class="sw" style="background:${domColors[c] || "var(--other)"}"></i>${esc(C[c].name)}</span><span class="track"><span class="fill" style="display:block;width:${(cnt[c] / max) * 100}%"></span></span><span class="n">${cnt[c]}</span></div>`).join("");
+  const list = D.entries[curDom][yr];
+  const named = list.some((e) => e[1]);
+  $("#dom-list-title").textContent = `Full list, ${yr}`;
+  let head = `<th class="num">Rank</th>${named ? `<th>${d.unit === "restaurants" ? "Restaurant" : "Name"}</th>` : ""}<th>Country</th>`;
+  if (!named) head = `<th class="num">Rank</th><th>Country of the system</th>`;
+  $("#dom-list").innerHTML = `<table><thead><tr>${head}</tr></thead><tbody>${list.map((e) => `<tr><td class="num">${e[0]}</td>${named ? `<td>${esc(e[1])}${e[2] ? `<span class="note"> · ${esc(e[2])}</span>` : ""}</td>` : ""}<td><span class="cdot"><i class="sw" style="background:${domColors[e[3]] || "var(--other)"}"></i>${esc(C[e[3]].name)}</span></td></tr>`).join("")}</tbody></table>`;
+}
+
+// ---------- 3. Countries: snapshot heatmap and profile
+const SNAPS = []; for (let y = 1970; y <= 2025; y += 5) SNAPS.push(y);
+let curCountry = null;
+function snapYear(d, s) {
+  let best = null;
+  d.years.forEach((y) => { if (best === null || Math.abs(y - s) < Math.abs(best - s) || (Math.abs(y - s) === Math.abs(best - s) && y > best)) best = y; });
+  return best !== null && Math.abs(best - s) <= 2 ? best : null;
+}
+function initCountries() {
+  const s = $("#snap-year");
+  s.innerHTML = SNAPS.map((y) => `<option${y === 2025 ? " selected" : ""}>${y}</option>`).join("");
+  s.addEventListener("change", drawHeatmap); $("#snap-sort").addEventListener("change", drawHeatmap);
+  const tot = C.map(() => 0);
+  DOM.forEach((d) => d.years.forEach((y) => D.entries[d.id][y].forEach((e) => tot[e[3]]++)));
+  const order = C.map((c, i) => i).sort((a, b) => C[a].name.localeCompare(C[b].name));
+  const cs = $("#country-select");
+  cs.innerHTML = order.map((i) => `<option value="${i}">${esc(C[i].name)}</option>`).join("");
+  cs.addEventListener("change", () => setCountry(+cs.value));
+  curCountry = C.findIndex((c) => c.name === "Norway");
+  cs.value = curCountry;
+  drawHeatmap(); drawProfile();
+}
+function setCountry(i) { curCountry = i; $("#country-select").value = i; drawProfile(); drawHeatmap(); }
+function drawHeatmap() {
+  const s = +$("#snap-year").value, sort = $("#snap-sort").value;
+  const cols = DOM.map((d) => ({ d, y: snapYear(d, s) }));
+  const rows = {};
+  cols.forEach(({ d, y }, j) => {
+    if (y === null) return;
+    const { cnt, total } = shares(d.id, y);
+    for (const c in cnt) { (rows[c] ||= { c: +c, cells: {}, k: 0, share: 0 }); rows[c].cells[j] = { n: cnt[c], sh: cnt[c] / total }; rows[c].k++; rows[c].share += cnt[c] / total; }
+  });
+  let R = Object.values(rows);
+  const byK = (a, b) => b.k - a.k || b.share - a.share || C[a.c].name.localeCompare(C[b.c].name);
+  if (sort === "name") R.sort((a, b) => C[a.c].name.localeCompare(C[b.c].name));
+  else if (sort === "region") R.sort((a, b) => C[a.c].region.localeCompare(C[b.c].region) || byK(a, b));
+  else R.sort(byK);
+  const avail = cols.filter((c) => c.y !== null).length;
+  const pairs = R.reduce((s, r) => s + r.k, 0);
+  $("#snap-summary").textContent = `${R.length} countries in at least one of ${avail} rankings available · ${pairs} country–ranking pairs`;
+  let h = `<thead><tr><th style="text-align:left">Country</th>${cols.map(({ d, y }) => `<th>${esc(d.label)}<br><span class="note">${y === null ? "not available" : y}</span></th>`).join("")}<th>Rankings</th></tr></thead><tbody>`;
+  let lastReg = null;
+  R.forEach((r) => {
+    if (sort === "region" && C[r.c].region !== lastReg) { lastReg = C[r.c].region; h += `<tr class="reg"><th colspan="${cols.length + 2}">${esc(lastReg)}</th></tr>`; }
+    h += `<tr class="${r.c === curCountry ? "sel" : ""}"><th scope="row" tabindex="0" data-c="${r.c}">${esc(C[r.c].name)}</th>`;
+    cols.forEach((col, j) => {
+      const v = r.cells[j];
+      if (!v) { h += `<td class="cell" style="background:${col.y === null ? "transparent" : "var(--bg)"}"></td>`; return; }
+      const a = Math.min(1, 0.14 + Math.sqrt(v.sh) * 1.25);
+      h += `<td class="cell" data-tip="${esc(C[r.c].name)}|${esc(col.d.label)}|${col.y}|${v.n}|${pct(v.sh)}|${col.d.unit}" style="background:color-mix(in srgb, var(--seq) ${Math.round(a * 100)}%, var(--surface));color:${a > 0.55 ? "var(--on-seq)" : "var(--ink)"}">${v.n}</td>`;
+    });
+    h += `<td class="cnt">${r.k}</td></tr>`;
+  });
+  const t = $("#heatmap"); t.innerHTML = h + "</tbody>";
+  t.onmousemove = (ev) => { const td = ev.target.closest("td.cell[data-tip]"); if (!td) return hideTip(); const [c, dl, y, n, sh, u] = td.dataset.tip.split("|"); showTip(ev, `<div class="h">${c}</div><div class="r">${dl}, ${y}</div><div class="r">${n} ${u} · ${sh} of the elite set</div>`); };
+  t.onmouseleave = hideTip;
+  t.onclick = (ev) => { const th = ev.target.closest("th[data-c]"); if (th) { setCountry(+th.dataset.c); $("#profile-title").scrollIntoView({ block: "center" }); } };
+  t.onkeydown = (ev) => { const th = ev.target.closest("th[data-c]"); if (th && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); setCountry(+th.dataset.c); } };
+}
+function drawProfile() {
+  const c = curCountry, host = $("#profile"); host.innerHTML = "";
+  let any = 0, best = null;
+  const rows = DOM.map((d) => ({ d, pts: d.years.map((y) => { const { cnt, total } = shares(d.id, y); const n = cnt[c] || 0; if (n) { any++; if (!best || n / total > best.sh) best = { d, y, n, sh: n / total }; } return { y, n, total }; }) }));
+  $("#profile-title").textContent = `${C[c].name}: entries in each elite set over time`;
+  if (any) $("#profile-note").textContent = `Circle area shows the country's share of the elite set; a small grey dot means the ranking was published that year but the country had no entry. Largest share: ${pct(best.sh)} of ${best.d.label.toLowerCase()} in ${best.y}.`;
+  else $("#profile-note").textContent = "No entries in any of the ten elite sets.";
+  const W = 1080, rowH = 34, ml = 190, mr = 20, mt = 6, H = mt + rowH * DOM.length + 24;
+  const x = (y) => ml + (y - 1970) / 55 * (W - ml - mr);
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `${C[c].name}: entries by elite set and year` }, host);
+  const g = el("g", { class: "grid" }, svg), ax = el("g", { class: "ax" }, svg);
+  for (let t = 1970; t <= 2025; t += 5) { el("line", { x1: x(t), x2: x(t), y1: mt, y2: H - 22 }, g); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, ax).textContent = t; }
+  rows.forEach(({ d, pts }, i) => {
+    const cy = mt + rowH * i + rowH / 2;
+    const lab = el("text", { x: 0, y: cy + 4, style: "fill:var(--ink);font-size:13px" }, svg); lab.textContent = d.label;
+    el("line", { x1: x(d.years[0]), x2: x(d.years[d.years.length - 1]), y1: cy, y2: cy, style: "stroke:var(--line)", "stroke-width": 1 }, svg);
+    pts.forEach((p) => {
+      if (!p.n) { el("circle", { cx: x(p.y), cy, r: 2, style: "fill:var(--axis)" }, svg); return; }
+      const r = Math.max(4, Math.sqrt(p.n / p.total) * 26);
+      el("circle", { cx: x(p.y), cy, r, style: "fill:var(--seq);stroke:var(--surface)", "stroke-width": 2, "fill-opacity": 0.85 }, svg);
+      const hit = el("circle", { class: "hit", cx: x(p.y), cy, r: Math.max(r, 10) }, svg);
+      hit.addEventListener("mousemove", (ev) => showTip(ev, `<div class="h">${esc(C[c].name)}, ${p.y}</div><div class="r">${esc(d.label)}</div><div class="r">${p.n} of ${p.total} ${d.unit} · ${pct(p.n / p.total)}</div>`));
+      hit.addEventListener("mouseleave", hideTip);
+    });
+  });
+}
+
+// ---------- 4. Football
+const FBS = [
+  { key: "men_share", label: "Men: FIFA member", col: "var(--s1)" },
+  { key: "women_share_first_match", label: "Women: has played an official international", col: "var(--s2)", until: 2000 },
+  { key: "women_share_active", label: "Women: team in the FIFA ranking", col: "var(--s3)" },
+];
+function initFootball() {
+  $("#fb-legend").innerHTML = FBS.map((s) => `<span><i class="sw line" style="background:${s.col}"></i>${s.label}</span>`).join("");
+  drawFootball();
+  const teams = D.football.teams.slice().sort((a, b) => a.name.localeCompare(b.name));
+  let sortKey = "name", asc = true;
+  const render = () => {
+    const q = $("#fb-search").value.trim().toLowerCase();
+    let T = teams.filter((t) => !q || t.name.toLowerCase().includes(q) || (t.code || "").toLowerCase().includes(q));
+    T.sort((a, b) => { const va = a[sortKey], vb = b[sortKey]; if (va === vb) return a.name.localeCompare(b.name); if (va == null) return 1; if (vb == null) return -1; return (va < vb ? -1 : 1) * (asc ? 1 : -1); });
+    $("#fb-count").textContent = `${T.length} of ${teams.length} FIFA member associations`;
+    const hd = (k, l, num) => `<th class="${num ? "num" : ""}" aria-sort="${sortKey === k ? (asc ? "ascending" : "descending") : "none"}"><button type="button" data-k="${k}">${l}${sortKey === k ? (asc ? " ↑" : " ↓") : ""}</button></th>`;
+    $("#fb-table").innerHTML = `<table><thead><tr>${hd("name", "Association")}${hd("code", "Code")}${hd("men", "FIFA member since", 1)}${hd("women", "Women's first official match", 1)}<th>Note</th></tr></thead><tbody>${T.map((t) => `<tr><td>${esc(t.name)}</td><td>${esc(t.code)}</td><td class="num">${t.men ?? "–"}</td><td class="num">${t.women ?? "–"}</td><td class="note">${esc(t.note)}</td></tr>`).join("")}</tbody></table>`;
+  };
+  $("#fb-table").addEventListener("click", (e) => { const b = e.target.closest("button[data-k]"); if (!b) return; if (sortKey === b.dataset.k) asc = !asc; else { sortKey = b.dataset.k; asc = true; } render(); });
+  $("#fb-search").addEventListener("input", render);
+  render();
+}
+function drawFootball() {
+  const host = $("#fb-chart"); host.innerHTML = "";
+  const S = D.football.shares;
+  const W = 1080, H = 300, ml = 44, mr = 64, mt = 10, mb = 26;
+  const x = (y) => ml + (y - 1970) / 55 * (W - ml - mr), y = (v) => mt + (1 - v / 1.1) * (H - mt - mb);
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, width: "100%", role: "img", "aria-label": "Share of countries with a national football team, 1970 to 2025" }, host);
+  svg.style.display = "block"; svg.style.height = "auto"; svg.style.overflow = "visible";
+  const g = el("g", { class: "grid" }, svg), ax = el("g", { class: "ax" }, svg);
+  [0.25, 0.5, 0.75].forEach((t) => el("line", { x1: ml, x2: W - mr, y1: y(t), y2: y(t) }, g));
+  el("line", { x1: ml, x2: W - mr, y1: y(1), y2: y(1), style: "stroke:var(--axis)" }, svg);
+  el("line", { class: "base", x1: ml, x2: W - mr, y1: y(0), y2: y(0) }, svg);
+  [0, 0.5, 1].forEach((t) => (el("text", { x: ml - 6, y: y(t) + 4, "text-anchor": "end" }, ax).textContent = pct(t)));
+  for (let t = 1970; t <= 2025; t += 5) el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, ax).textContent = t;
+  FBS.forEach((s) => {
+    const pts = S.filter((r) => r[s.key] != null && (!s.until || r.year <= s.until));
+    el("path", { d: pts.map((p, i) => `${i ? "L" : "M"}${x(p.year)},${y(p[s.key])}`).join(""), fill: "none", style: `stroke:${s.col}`, "stroke-width": 2, "stroke-linejoin": "round" }, svg);
+    pts.forEach((p) => {
+      el("circle", { cx: x(p.year), cy: y(p[s.key]), r: 4, style: `fill:${s.col};stroke:var(--surface)`, "stroke-width": 2 }, svg);
+      const hit = el("circle", { class: "hit", cx: x(p.year), cy: y(p[s.key]), r: 11 }, svg);
+      const nTeams = s.key === "men_share" ? p.men_teams : s.key === "women_share_active" ? p.women_teams_active : p.women_teams_first_match;
+      hit.addEventListener("mousemove", (ev) => showTip(ev, `<div class="h">${p.year}</div><div class="r">${s.label}</div><div class="r">${nTeams} teams · ${p.n_world} countries · ${pct(p[s.key])}</div>`));
+      hit.addEventListener("mouseleave", hideTip);
+    });
+    const last = pts[pts.length - 1];
+    if (!s.until) el("text", { x: x(last.year) + 8, y: y(last[s.key]) + (s.key === "men_share" ? -6 : 12), style: "fill:var(--ink-2);font-size:12px" }, svg).textContent = pct(last[s.key]);
+  });
+}
+
+// ---------- 5. Downloads
+function csv(rows) { return rows.map((r) => r.map((v) => { const s = v == null ? "" : String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }).join(",")).join("\n") + "\n"; }
+function buildCSV(kind) {
+  if (kind === "entries") {
+    const out = [["domain", "year", "rank", "name", "location", "country", "region"]];
+    DOM.forEach((d) => d.years.forEach((y) => D.entries[d.id][y].forEach((e) => out.push([d.id, y, e[0], e[1], e[2], C[e[3]].name, C[e[3]].region]))));
+    return out;
+  }
+  if (kind === "indices") {
+    const out = [["domain", "year", "list_length", "n_countries", "n_world", "H_adj", "S_adj"]];
+    DOM.forEach((d) => d.idx.forEach((r) => out.push([d.id, r.year, r.slots, r.n, r.nw, r.H, r.S])));
+    return out;
+  }
+  const out = [["year", "n_world", "men_teams", "men_share", "women_teams_first_match", "women_share_first_match", "women_teams_active", "women_share_active"]];
+  D.football.shares.forEach((r) => out.push([r.year, r.n_world, r.men_teams, r.men_share, r.women_teams_first_match, r.women_share_first_match, r.women_teams_active, r.women_share_active]));
+  return out;
+}
+function initDownloads() {
+  let saver = null;
+  if (window.claude && typeof window.claude.use === "function") window.claude.use("downloads").then((d) => (saver = d)).catch(() => {});
+  document.querySelector(".dl").addEventListener("click", async (e) => {
+    const b = e.target.closest("button[data-dl]"); if (!b) return;
+    const kind = b.dataset.dl, filename = `elite_participation_${kind}.csv`, data = csv(buildCSV(kind));
+    const st = $("#dl-status");
+    if (saver) {
+      try { await saver.save({ filename, data }); st.textContent = `Saved ${filename}.`; } catch (err) { st.textContent = "The download was cancelled or is not available here."; }
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([data], { type: "text/csv" })); a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    st.textContent = `If nothing was downloaded, get the data from Zenodo instead.`;
+  });
+}
+})();
+</script>
+</body>
+</html>
