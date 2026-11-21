@@ -103,10 +103,13 @@ input[type="range"] { accent-color: var(--accent); width: min(360px, 100%); }
 .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
 .sw.line { height: 3px; width: 16px; border-radius: 2px; }
 /* small multiples */
-.multiples { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.multiples { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 1100px) { .multiples { grid-template-columns: repeat(4, minmax(0,1fr)); } }
 @media (max-width: 980px) { .multiples { grid-template-columns: repeat(3, minmax(0,1fr)); } }
 @media (max-width: 640px) { .bar-row { grid-template-columns: 110px 1fr 30px; } .multiples { grid-template-columns: repeat(2, minmax(0,1fr)); } }
-.mini { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 10px 4px; cursor: pointer; text-align: left; font: inherit; color: inherit; display: grid; gap: 2px; }
+.mini { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 10px 4px; cursor: pointer; text-align: left; font: inherit; color: inherit; display: flex; flex-direction: column; gap: 2px; }
+.mini svg { margin-top: auto; }
+.nw { white-space: nowrap; }
 .mini:hover { border-color: var(--axis); box-shadow: 0 1px 0 var(--line); }
 .mini .t { font-size: 13.5px; font-weight: 600; }
 .mini .v { font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
@@ -160,6 +163,12 @@ footer { padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
 .loading { padding: 40px; text-align: center; color: var(--muted); }
 .hit { fill: transparent; cursor: pointer; }
 .empty { color: var(--muted); font-size: 14px; padding: 12px 0; }
+#dom-bars { max-height: 560px; overflow-y: auto; padding-right: 4px; }
+.method .wide { grid-column: 1 / -1; }
+@media (min-width: 900px) { .method .wide ul { columns: 2; column-gap: 32px; } .method .wide li { break-inside: avoid; } }
+.tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; color: var(--accent); background: var(--accent-wash); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 999px; padding: 0 7px; margin-left: 6px; vertical-align: 1px; white-space: nowrap; }
+header .tag { color: #fff; background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.35); }
+h2 .tag { font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 12px; vertical-align: 4px; }
 </style>
 </head>
 <body>
@@ -168,7 +177,8 @@ footer { padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
     <div class="kicker">Interactive companion to a paper in Social Sciences &amp; Humanities Open, vol. 14 (2026)</div>
     <h1>Elite Participation as a Measure of Global Development</h1>
     <div class="prose">
-      <p>If world poverty and income gaps between countries have really shrunk, more countries should be able to compete at the global frontier of activities that need surplus resources, health, infrastructure and international networks. This site lets you explore who has made it into ten global elite rankings since 1970, from chess and tennis to supercomputers and fine dining, and how the number of countries with a national football team has grown.</p>
+      <p>If world poverty and income gaps between countries have really shrunk, more countries should be able to compete at the global frontier of activities that need surplus resources, health, infrastructure and international networks. This site lets you explore who has made it into fifteen global elite sets since 1970, from chess, tennis and Olympic swimming to supercomputers, fine dining, Nobel prizes and the most-cited research papers, and how the number of countries with a national football team has grown.</p>
+      <p>Swimming, Nobel prizes and research papers were added after publication and are <b>not in the published paper</b>. They are marked <span class="tag">Not in paper</span> throughout the site.</p>
       <p>For a short, non-technical introduction, read the blog post <a href="https://capitalistwelfarestate.substack.com/p/measuring-global-convergence-without">Measuring Global Convergence Without Measuring Income</a>.</p>
     </div>
     <div class="cite">Andreas Bergh (2026). <a href="https://doi.org/10.1016/j.ssaho.2026.104050">doi:10.1016/j.ssaho.2026.104050</a> · Data and code: <a href="https://doi.org/10.5281/zenodo.24000711">doi:10.5281/zenodo.24000711</a> · Blog: <a href="https://capitalistwelfarestate.substack.com/">Capitalist Welfare State on Substack</a></div>
@@ -179,6 +189,7 @@ footer { padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
     <a href="#trends">Trends</a>
     <a href="#domains">Inside each ranking</a>
     <a href="#countries">Countries</a>
+    <a href="#science">Science</a>
     <a href="#football">Football</a>
     <a href="#method">Method and data</a>
   </div>
@@ -189,7 +200,7 @@ footer { padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
   <div class="wrap">
     <h2>Elite sets have become more diverse</h2>
     <div class="findings" id="findings"></div>
-    <div class="prose"><p>Each panel shows one elite set. Concentration is the Herfindahl index and diversity the Shannon index, both adjusted for the number of countries in the world, so they lie between 0 and 1. Hollow markers are years with a shorter list. Click a panel to look inside that ranking.</p></div>
+    <div class="prose"><p>Each panel shows one elite set. Concentration is the Herfindahl index and diversity the Shannon index, both adjusted for the number of countries in the world, so they lie between 0 and 1. Hollow markers are years with a shorter list; for swimming, the 1978 and 1982 World Championships that replace the boycotted 1980 and 1984 Olympics; and for research papers, years where fewer than 80 percent of papers have country data. Panels marked <span class="tag">Not in paper</span> are additions not in the published paper. Click a panel to look inside that ranking.</p></div>
     <div class="controls">
       <span id="metric-label">Show</span>
       <div class="seg" role="group" aria-labelledby="metric-label" id="metric">
@@ -262,6 +273,50 @@ footer { padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
   </div>
 </section>
 
+<section id="science">
+  <div class="wrap">
+    <h2>Science: Nobel laureates and the most-cited research <span class="tag">Not in paper</span></h2>
+    <div class="prose">
+      <p>Neither series in this section is in the published paper. Both were added afterwards to see whether science follows the pattern of the paper's ten elite sets.</p>
+      <h3>Nobel laureates: where they work and where they were born</h3>
+      <p>Nobel prizes in physics, chemistry, medicine and economics show a different pattern from sport and technology. Where laureates do their prize-winning careers has stayed highly concentrated, with the United States far ahead, while their countries of birth are much more varied. The gap is a measure of how strongly a few research systems attract talent from elsewhere.</p>
+      <p>Two cautions: prizes usually reward work done decades earlier, so they describe the research elite of a generation ago, and each 5-year window has only 33 to 52 laureates.</p>
+    </div>
+    <div class="findings" id="sci-facts"></div>
+    <div class="two">
+      <div class="panel" style="display:grid; gap:10px; align-content:start;">
+        <h3>Concentration across countries (adjusted Herfindahl)</h3>
+        <div class="legend"><span><i class="sw line" style="background:var(--fb-men)"></i>Where laureates work</span><span><i class="sw line" style="background:var(--fb-women)"></i>Country of birth</span></div>
+        <div id="sci-conc"></div>
+      </div>
+      <div class="panel" style="display:grid; gap:10px; align-content:start;">
+        <h3>Laureates working in the United States who were born abroad</h3>
+        <p class="note">Share of laureates with a US affiliation at the award whose country of birth is not the United States.</p>
+        <div id="sci-foreign"></div>
+      </div>
+    </div>
+    <div class="prose">
+      <h3>The 500 most-cited research papers of the year</h3>
+      <p>For every fifth year from 1970 to 2020, the 500 most-cited works published that year in OpenAlex, counted by the authors' countries of affiliation. Each paper counts as one, split between the countries of its authors. Unlike Nobel prizes, the research frontier has spread out: the US share has fallen from about two thirds to under a third, China has risen from almost nothing to a quarter, and more than 80 countries had a share of at least one top paper in 2020.</p>
+      <p>Two cautions: country data are missing for many older papers (shown as hollow markers), and 2020 is dominated by COVID-19 research. Without the 227 papers with COVID in the title, 2020 still shows the same picture: concentration 0.14, diversity 0.50, 76 countries, US 33 percent and China 10 percent.</p>
+    </div>
+    <div class="findings" id="pap-facts"></div>
+    <div class="two">
+      <div class="panel" style="display:grid; gap:10px; align-content:start;">
+        <h3>Concentration and diversity of the most-cited papers</h3>
+        <div class="legend"><span><i class="sw line" style="background:var(--fb-men)"></i>Concentration (adjusted Herfindahl)</span><span><i class="sw line" style="background:var(--fb-women)"></i>Diversity (adjusted Shannon)</span></div>
+        <div id="pap-idx"></div>
+      </div>
+      <div class="panel" style="display:grid; gap:10px; align-content:start;">
+        <h3>Countries among the authors of the most-cited papers</h3>
+        <div class="legend"><span><i class="sw line" style="background:var(--fb-men)"></i>Any share of a paper</span><span><i class="sw line" style="background:var(--fb-women)"></i>At least one paper in total</span></div>
+        <div id="pap-n"></div>
+      </div>
+    </div>
+    <p class="note" id="pap-note"></p>
+  </div>
+</section>
+
 <section id="football">
   <div class="wrap">
     <h2>Almost every country now has a national football team, women's included</h2>
@@ -308,9 +363,19 @@ footer { padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
           <li>Nationality does not show where skills were developed, and the restaurant list rests on the judgement of a voting panel.</li>
         </ul>
       </div>
-      <div class="panel">
+      <div class="panel wide">
+        <h3>Additions not in the published paper</h3>
+        <p>Swimming, Nobel prizes and research papers were added to this site after publication. They use the same indices but are not part of the paper's analysis.</p>
+        <ul>
+          <li>Swimming counts the eight finalists in each of the 11 individual pool events held at every Olympics since 1972, 88 per sex. The boycotted 1980 and 1984 Games are replaced by the 1978 and 1982 World Championships. Swimmers competing as neutral athletes are coded by their own country.</li>
+          <li>Nobel prizes cover physics, chemistry, medicine and economics, grouped in 5-year windows (1971–75 to 2021–25) because each year has only a few laureates. "Where laureates work" uses the affiliation at the award, split equally when a laureate had affiliations in several countries; four laureates without an affiliation are coded by residence, and Myrdal and Hayek (1974) are left out. "Country of birth" uses present-day borders.</li>
+          <li>Research papers are the 500 most-cited works published in each fifth year from 1970 to 2020 in OpenAlex (citations counted in November 2026), keeping the 461 to 488 journal articles among them. Each paper counts as one, split equally between authors with a known country, and each author's share split across their countries. Hong Kong and Macao are counted with China and other territories with their sovereign state; before 1991, republics of the Soviet Union, Yugoslavia and Czechoslovakia are merged into those states.</li>
+          <li>OpenAlex lacks affiliation countries for many older papers: 62 to 79 percent of papers have country data in 1970–1990 (hollow markers) and 84 to 97 percent from 1995. Older papers have also had longer to collect citations.</li>
+        </ul>
+      </div>
+      <div class="panel wide">
         <h3>Download</h3>
-        <p>The data behind this site, in long format. The full replication package, with a source link for every entry, is on <a href="https://doi.org/10.5281/zenodo.24000711">Zenodo</a> (data CC BY 4.0, code MIT).</p>
+        <p>The data behind this site, in long format. For Nobel prizes, "year" is the end of the 5-year window, "rank" the prize year, and "weight" the laureate's share when affiliations span several countries. For research papers, each row is a country, "weight" its fractional number of papers and "rank" its order within the year. The full replication package, with a source link for every entry, is on <a href="https://doi.org/10.5281/zenodo.24000711">Zenodo</a> (data CC BY 4.0, code MIT).</p>
         <div class="dl">
           <button class="btn" type="button" data-dl="entries">Entries (CSV)</button>
           <button class="btn" type="button" data-dl="indices">Indices (CSV)</button>
@@ -322,7 +387,7 @@ footer { padding: 40px 0 56px; font-size: 13px; color: var(--muted); }
   </div>
 </section>
 </main>
-<footer><div class="wrap">Bergh, A. (2026). Elite participation as a measure of global development. <i>Social Sciences &amp; Humanities Open</i>, 14, 104050. Sources: FIDE, ATP, WTA, FIS, Official World Golf Ranking, Rolex Women's World Golf Rankings, The World's 50 Best Restaurants, TOP500, FIFA.<br>More from the author: <a href="https://capitalistwelfarestate.substack.com/">capitalistwelfarestate.substack.com</a></div></footer>
+<footer><div class="wrap">Bergh, A. (2026). Elite participation as a measure of global development. <i>Social Sciences &amp; Humanities Open</i>, 14, 104050. Sources: FIDE, ATP, WTA, FIS, Official World Golf Ranking, Olympedia, World Aquatics, Nobel Prize Outreach, OpenAlex, Rolex Women's World Golf Rankings, The World's 50 Best Restaurants, TOP500, FIFA.<br>More from the author: <a href="https://capitalistwelfarestate.substack.com/">capitalistwelfarestate.substack.com</a></div></footer>
 <div id="tip" role="tooltip"></div>
 
 <script>
@@ -357,25 +422,43 @@ fetch("data.json").then((r) => r.json()).then((d) => { D = d; init(); }).catch((
   $("#multiples").innerHTML = '<div class="loading">The data file could not be loaded. Open this page from a web server, not as a local file.</div>';
 });
 
+const fmtN = (n) => { const r = Math.round(n * 10) / 10; if (n > 0 && r === 0) return "<0.1"; return Number.isInteger(r) ? String(r) : r.toFixed(1); };
+const NOBEL = (d) => d.unit === "laureates";
+const PAPERS = (d) => d.unit === "papers";
+const FRAC = (d) => NOBEL(d) || PAPERS(d);   // fractional counts: set size varies by design
+const NEW = new Set(["swimming_men", "swimming_women", "nobel_work", "nobel_birth", "papers_top500"]);
+const TAG = '<span class="tag" title="Added after publication; not in the published paper">Not in paper</span>';
+const tagOf = (d) => NEW.has(d.id) ? TAG : "";
+const NUMW = ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen","twenty"];
+const setName = (d, n) => d.unit === "swimmers" ? `${n} finalists` : NOBEL(d) ? `${fmtN(n)} laureates` : PAPERS(d) ? `top 500 papers, ${n} with country data` : `top ${n}`;
+let PMETA = {};
+const lowCov = (d, y) => PAPERS(d) && PMETA[y] && PMETA[y].cov < 0.8;
+const flagOf = (d, p) => isAlt(d, p.year) ? "World Championships" : lowCov(d, p.year) ? `country data for ${pct(PMETA[p.year].cov)} of papers` : (p.slots < d.full && !FRAC(d)) ? "shorter list" : "";
+const yLab = (d, y) => NOBEL(d) ? `${y - 4}–${String(y).slice(2)}` : String(y);
+const ALT = { swimming_men: [1978, 1982], swimming_women: [1978, 1982] };
+const isAlt = (d, y) => (ALT[d.id] || []).includes(y);
 function init() {
   C = D.countries.map(([name, region]) => ({ name, region }));
   DOM = D.domains;
   byId = Object.fromEntries(DOM.map((d) => [d.id, d]));
+  (D.papers_meta || []).forEach(([y, nj, nc, cov, ge1]) => (PMETA[y] = { nj, nc, cov, ge1 }));
   DOM.forEach((d) => {
     d.idx = D.indices[d.id].map(([year, slots, n, nw, H, S]) => ({ year, slots, n, nw, H, S }));
     d.years = d.idx.map((r) => r.year);
     d.full = Math.max(...d.idx.map((r) => r.slots));
   });
   renderFindings();
-  initTrends(); initDomain(); initCountries(); initFootball(); initDownloads();
+  initTrends(); initDomain(); initCountries(); initScience(); initPapers(); initFootball(); initDownloads();
 }
 
 function renderFindings() {
-  const imp = DOM.filter((d) => { const a = d.idx[0], b = d.idx[d.idx.length - 1]; return b.H < a.H && b.S > a.S; }).length;
+  const better = (d) => { const a = d.idx[0], b = d.idx[d.idx.length - 1]; return b.H < a.H && b.S > a.S; };
+  const imp = DOM.filter(better).length, exc = DOM.filter((d) => !better(d)).map((d) => d.label);
+  const orig = DOM.filter((d) => !NEW.has(d.id)), impO = orig.filter(better).length;
   const ch = byId.chess.idx, sc = byId.supercomputers_top500.idx;
   const fb = D.football.shares, last = fb[fb.length - 1];
   const items = [
-    [`${imp} of ${DOM.length}`, "elite sets became less concentrated and more diverse. Men's golf is the exception."],
+    [`${imp} of ${DOM.length}`, `elite sets became less concentrated and more diverse (${impO} of the ${orig.length} in the published paper). Exceptions: ${exc.join("; ")}.`],
     [`${f2(ch[0].H)} → ${f2(ch[ch.length - 1].H)}`, `Concentration in chess, ${ch[0].year}–${ch[ch.length - 1].year}: the largest fall. In 1970 the Soviet Union had 16 of the top 25.`],
     [`${sc[0].n} → ${sc[sc.length - 1].n}`, `countries hosting a top-500 supercomputer, ${sc[0].year}–${sc[sc.length - 1].year}.`],
     [`${pct(fb[0].women_share_first_match)} → ${pct(last.women_share_active)}`, `share of countries with a women's national football team, ${fb[0].year}–${last.year}.`],
@@ -386,9 +469,9 @@ function renderFindings() {
 // ---------- 1. Trends small multiples
 let metric = "H";
 const METRIC = {
-  H: { key: "H", lo: 0, hi: 0.5, ticks: [0, 0.25, 0.5], fmt: f2, name: "Concentration (adjusted Herfindahl)", note: "Lower values mean less concentration. All panels share one scale." },
+  H: { key: "H", lo: 0, hi: 0.6, ticks: [0, 0.3, 0.6], fmt: f2, name: "Concentration (adjusted Herfindahl)", note: "Lower values mean less concentration. All panels share one scale." },
   S: { key: "S", lo: 0, hi: 0.6, ticks: [0, 0.3, 0.6], fmt: f2, name: "Diversity (adjusted Shannon)", note: "Higher values mean more diversity. All panels share one scale." },
-  N: { key: "n", lo: 0, hi: 45, ticks: [0, 20, 40], fmt: (x) => String(x), name: "Countries represented", note: "Number of countries with at least one entry. All panels share one scale; the top 500 supercomputers is a much larger set than the others." },
+  N: { key: "n", lo: 0, hi: 85, ticks: [0, 40, 80], fmt: (x) => String(x), name: "Countries represented", note: "Number of countries with at least one entry (for Nobel prizes and research papers, any fractional share). All panels share one scale; the top 500 supercomputers and the 500 most-cited papers are much larger sets than the others." },
 };
 function initTrends() {
   $("#metric").addEventListener("click", (e) => {
@@ -410,8 +493,8 @@ function drawTrends() {
     const pts = d.idx, a = pts[0], b = pts[pts.length - 1];
     const btn = document.createElement("button");
     btn.className = "mini"; btn.type = "button";
-    btn.setAttribute("aria-label", `${d.label}: ${M.name} ${M.fmt(a[M.key])} in ${a.year}, ${M.fmt(b[M.key])} in ${b.year}. Open in ranking explorer.`);
-    btn.innerHTML = `<span class="t">${esc(d.label)}</span><span class="v">${a.year}: ${M.fmt(a[M.key])} → ${b.year}: ${M.fmt(b[M.key])}</span>`;
+    btn.setAttribute("aria-label", `${d.label}${NEW.has(d.id) ? " (not in the published paper)" : ""}: ${M.name} ${M.fmt(a[M.key])} in ${a.year}, ${M.fmt(b[M.key])} in ${b.year}. Open in ranking explorer.`);
+    btn.innerHTML = `<span class="t">${esc(d.label)}${tagOf(d)}</span><span class="v"><span class="nw">${yLab(d, a.year)}: ${M.fmt(a[M.key])}</span> → <span class="nw">${yLab(d, b.year)}: ${M.fmt(b[M.key])}</span></span>`;
     const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-hidden": "true" }, btn);
     const g = el("g", { class: "grid" }, svg), ax = el("g", { class: "ax" }, svg);
     M.ticks.forEach((t) => {
@@ -422,10 +505,10 @@ function drawTrends() {
     [1970, 2000, 2025].forEach((t) => { el("text", { x: x(t), y: H - 4, "text-anchor": t === 1970 ? "start" : t === 2025 ? "end" : "middle" }, ax).textContent = t; });
     el("path", { d: pts.map((p, i) => `${i ? "L" : "M"}${x(p.year)},${y(p[M.key])}`).join(""), fill: "none", style: "stroke:var(--trend)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
     pts.forEach((p) => {
-      const short = p.slots < d.full;
+      const fl = flagOf(d, p), short = fl !== "";
       el("circle", { cx: x(p.year), cy: y(p[M.key]), r: 3.4, "stroke-width": 1.6, style: short ? "fill:var(--surface);stroke:var(--trend)" : "fill:var(--trend);stroke:var(--surface)" }, svg);
       const hit = el("circle", { class: "hit", cx: x(p.year), cy: y(p[M.key]), r: 9 }, svg);
-      hit.addEventListener("mousemove", (ev) => showTip(ev, `<div class="h">${esc(d.label)}, ${p.year}</div><div class="r">Concentration ${f2(p.H)} · Diversity ${f2(p.S)}</div><div class="r">${p.n} countries · top ${p.slots}${short ? " (shorter list)" : ""}</div>`));
+      hit.addEventListener("mousemove", (ev) => showTip(ev, `<div class="h">${esc(d.label)}, ${yLab(d, p.year)}</div><div class="r">Concentration ${f2(p.H)} · Diversity ${f2(p.S)}</div><div class="r">${p.n} countries · ${setName(d, p.slots)}${fl ? ` · ${fl}` : ""}</div>`));
       hit.addEventListener("mouseleave", hideTip);
     });
     btn.addEventListener("click", () => { hideTip(); setDomain(d.id); $("#domains").scrollIntoView(); });
@@ -437,7 +520,7 @@ function drawTrends() {
 let curDom = "chess", curYearIdx = 0, domColors = {};
 function initDomain() {
   const s = $("#dom-select");
-  s.innerHTML = DOM.map((d) => `<option value="${d.id}">${esc(d.label)}</option>`).join("");
+  s.innerHTML = DOM.map((d) => `<option value="${d.id}">${esc(d.label)}${NEW.has(d.id) ? " (not in paper)" : ""}</option>`).join("");
   s.addEventListener("change", () => setDomain(s.value));
   $("#dom-year").addEventListener("input", (e) => { curYearIdx = +e.target.value; drawDomainYear(); highlightStack(); });
   setDomain("chess");
@@ -447,7 +530,7 @@ function setDomain(id) {
   const d = byId[id];
   // top 7 countries by total entries across years -> fixed colours
   const tot = {};
-  d.years.forEach((y) => D.entries[id][y].forEach((e) => { tot[e[3]] = (tot[e[3]] || 0) + 1 / D.entries[id][y].length; }));
+  d.years.forEach((y) => { const sh = shares(id, y); for (const c in sh.cnt) tot[c] = (tot[c] || 0) + sh.cnt[c] / sh.total; });
   const top = Object.keys(tot).sort((a, b) => tot[b] - tot[a]).slice(0, 7).map(Number);
   domColors = {}; top.forEach((c, i) => (domColors[c] = `var(--s${i + 1})`));
   $("#dom-legend").innerHTML = top.map((c) => `<span><i class="sw" style="background:${domColors[c]}"></i>${esc(C[c].name)}</span>`).join("") + `<span><i class="sw" style="background:var(--other)"></i>Other countries</span>`;
@@ -457,8 +540,9 @@ function setDomain(id) {
 }
 function shares(id, y) {
   const list = D.entries[id][y], cnt = {};
-  list.forEach((e) => (cnt[e[3]] = (cnt[e[3]] || 0) + 1));
-  return { cnt, total: list.length };
+  let total = 0;
+  list.forEach((e) => { const w = e[4] ?? 1; cnt[e[3]] = (cnt[e[3]] || 0) + w; total += w; });
+  return { cnt, total };
 }
 let stackCols = [];
 function drawStack() {
@@ -486,11 +570,11 @@ function drawStack() {
       const hgt = Math.max(0, y0 - y1 - gap);
       const rect = el("rect", { x: cx - bw / 2, y: y1 + (j === segs.length - 1 ? 0 : 0), width: bw, height: hgt, rx: j === segs.length - 1 ? 3 : 0, style: `fill:${s.c < 0 ? "var(--other)" : domColors[s.c]}` }, col);
       const label = s.c < 0 ? `Other countries (${Object.keys(cnt).length - keys.length})` : C[s.c].name;
-      rect.addEventListener("mousemove", (ev) => showTip(ev, `<div class="h">${esc(label)}, ${yr}</div><div class="r">${s.v} of ${total} ${d.unit} · ${pct(s.v / total)}</div>`));
+      rect.addEventListener("mousemove", (ev) => showTip(ev, `<div class="h">${esc(label)}, ${yLab(d, yr)}</div><div class="r">${fmtN(s.v)} of ${fmtN(total)} ${d.unit} · ${pct(s.v / total)}</div>`));
       rect.addEventListener("mouseleave", hideTip);
     });
-    const short = total < d.full;
-    el("text", { x: cx, y: H - 6, "text-anchor": "middle", style: short ? "font-style:italic" : "" }, ax).textContent = n > 14 ? (i % 2 === 0 || i === n - 1 ? yr : "") : yr;
+    const short = flagOf(d, d.idx[i]) !== "";
+    el("text", { x: cx, y: H - 6, "text-anchor": "middle", style: short ? "font-style:italic" : "" }, ax).textContent = n > 14 ? (i % 2 === 0 || i === n - 1 ? yLab(d, yr) : "") : yLab(d, yr);
     const sel = el("rect", { x: cx - band / 2, y: mt - 4, width: band, height: H - mt - mb + 8, rx: 5, fill: "none", "stroke-width": 1.5, style: "stroke:var(--accent)", opacity: 0 }, svg);
     col.addEventListener("click", () => { curYearIdx = i; $("#dom-year").value = i; drawDomainYear(); highlightStack(); });
     stackCols.push(sel);
@@ -499,19 +583,25 @@ function drawStack() {
 function highlightStack() { stackCols.forEach((r, i) => r.setAttribute("opacity", i === curYearIdx ? 1 : 0)); }
 function drawDomainYear() {
   const d = byId[curDom], yr = d.years[curYearIdx], p = d.idx[curYearIdx];
-  $("#dom-year-label").textContent = yr;
-  $("#dom-year").setAttribute("aria-valuetext", yr);
+  $("#dom-year-label").textContent = yLab(d, yr);
+  $("#dom-year").setAttribute("aria-valuetext", yLab(d, yr));
   const { cnt, total } = shares(curDom, yr);
-  $("#dom-stats").innerHTML = `<span>Elite set <b>top ${total}</b>${total < d.full ? " (shorter list)" : ""}</span><span>Countries <b>${p.n}</b></span><span>Concentration <b>${f2(p.H)}</b></span><span>Diversity <b>${f2(p.S)}</b></span><span class="note">${esc(d.elite)}. Source: <a href="${d.url}">${esc(d.source)}</a></span>`;
+  const fl = flagOf(d, p);
+  $("#dom-stats").innerHTML = `<span>Elite set <b>${setName(d, p.slots)}</b>${fl ? ` (${fl})` : ""}${tagOf(d)}</span><span>Countries <b>${p.n}</b></span><span>Concentration <b>${f2(p.H)}</b></span><span>Diversity <b>${f2(p.S)}</b></span><span class="note">${esc(d.elite)}. Source: <a href="${d.url}">${esc(d.source)}</a></span>`;
   const rows = Object.keys(cnt).map(Number).sort((a, b) => cnt[b] - cnt[a] || C[a].name.localeCompare(C[b].name));
   const max = cnt[rows[0]];
-  $("#dom-bars-title").textContent = `${d.unit[0].toUpperCase() + d.unit.slice(1)} by country, ${yr}`;
-  $("#dom-bars").innerHTML = rows.map((c) => `<div class="bar-row"><span class="lab cdot"><i class="sw" style="background:${domColors[c] || "var(--other)"}"></i>${esc(C[c].name)}</span><span class="track"><span class="fill" style="display:block;width:${(cnt[c] / max) * 100}%"></span></span><span class="n">${cnt[c]}</span></div>`).join("");
+  $("#dom-bars-title").textContent = `${d.unit[0].toUpperCase() + d.unit.slice(1)} by country, ${yLab(d, yr)}`;
+  $("#dom-bars").innerHTML = rows.map((c) => `<div class="bar-row"><span class="lab cdot"><i class="sw" style="background:${domColors[c] || "var(--other)"}"></i>${esc(C[c].name)}</span><span class="track"><span class="fill" style="display:block;width:${(cnt[c] / max) * 100}%"></span></span><span class="n">${fmtN(cnt[c])}</span></div>`).join("");
   const list = D.entries[curDom][yr];
   const named = list.some((e) => e[1]);
-  $("#dom-list-title").textContent = `Full list, ${yr}`;
-  let head = `<th class="num">Rank</th>${named ? `<th>${d.unit === "restaurants" ? "Restaurant" : "Name"}</th>` : ""}<th>Country</th>`;
+  $("#dom-list-title").textContent = `Full list, ${yLab(d, yr)}`;
+  const swim = d.unit === "swimmers";
+  let head = `<th class="num">${swim ? "Place" : NOBEL(d) ? "Year" : "Rank"}</th>${named ? `<th>${d.unit === "restaurants" ? "Restaurant" : swim ? "Swimmer and event" : NOBEL(d) ? "Laureate and prize" : "Name"}</th>` : ""}<th>${d.id === "nobel_birth" ? "Country of birth" : d.id === "nobel_work" ? "Country of affiliation" : "Country"}</th>`;
   if (!named) head = `<th class="num">Rank</th><th>Country of the system</th>`;
+  if (PAPERS(d)) {
+    $("#dom-list").innerHTML = `<table><thead><tr><th class="num">Rank</th><th>Authors' country</th><th class="num">Papers</th></tr></thead><tbody>${list.map((e) => `<tr><td class="num">${e[0]}</td><td><span class="cdot"><i class="sw" style="background:${domColors[e[3]] || "var(--other)"}"></i>${esc(C[e[3]].name)}</span></td><td class="num">${fmtN(e[4] ?? 1)}</td></tr>`).join("")}</tbody></table>`;
+    return;
+  }
   $("#dom-list").innerHTML = `<table><thead><tr>${head}</tr></thead><tbody>${list.map((e) => `<tr><td class="num">${e[0]}</td>${named ? `<td>${esc(e[1])}${e[2] ? `<span class="note"> · ${esc(e[2])}</span>` : ""}</td>` : ""}<td><span class="cdot"><i class="sw" style="background:${domColors[e[3]] || "var(--other)"}"></i>${esc(C[e[3]].name)}</span></td></tr>`).join("")}</tbody></table>`;
 }
 
@@ -554,8 +644,8 @@ function drawHeatmap() {
   else R.sort(byK);
   const avail = cols.filter((c) => c.y !== null).length;
   const pairs = R.reduce((s, r) => s + r.k, 0);
-  $("#snap-summary").textContent = `${R.length} countries in at least one of ${avail} rankings available · ${pairs} country–ranking pairs`;
-  let h = `<thead><tr><th style="text-align:left">Country</th>${cols.map(({ d, y }) => `<th>${esc(d.label)}<br><span class="note">${y === null ? "not available" : y}</span></th>`).join("")}<th>Rankings</th></tr></thead><tbody>`;
+  $("#snap-summary").textContent = `${R.length} countries in at least one of ${avail} elite sets available · ${pairs} country–set pairs · † not in the published paper`;
+  let h = `<thead><tr><th style="text-align:left">Country</th>${cols.map(({ d, y }) => `<th>${esc(d.label)}${NEW.has(d.id) ? "<sup title=\"Not in the published paper\">†</sup>" : ""}<br><span class="note">${y === null ? "not available" : yLab(d, y)}</span></th>`).join("")}<th>Rankings</th></tr></thead><tbody>`;
   let lastReg = null;
   R.forEach((r) => {
     if (sort === "region" && C[r.c].region !== lastReg) { lastReg = C[r.c].region; h += `<tr class="reg"><th colspan="${cols.length + 2}">${esc(lastReg)}</th></tr>`; }
@@ -564,7 +654,7 @@ function drawHeatmap() {
       const v = r.cells[j];
       if (!v) { h += `<td class="cell" style="background:${col.y === null ? "transparent" : "var(--bg)"}"></td>`; return; }
       const a = Math.min(1, 0.14 + Math.sqrt(v.sh) * 1.25);
-      h += `<td class="cell" data-tip="${esc(C[r.c].name)}|${esc(col.d.label)}|${col.y}|${v.n}|${pct(v.sh)}|${col.d.unit}" style="background:color-mix(in srgb, var(--seq) ${Math.round(a * 100)}%, var(--surface));color:${a > 0.55 ? "var(--on-seq)" : "var(--ink)"}">${v.n}</td>`;
+      h += `<td class="cell" data-tip="${esc(C[r.c].name)}|${esc(col.d.label)}|${yLab(col.d, col.y)}|${fmtN(v.n)}|${pct(v.sh)}|${col.d.unit}" style="background:color-mix(in srgb, var(--seq) ${Math.round(a * 100)}%, var(--surface));color:${a > 0.55 ? "var(--on-seq)" : "var(--ink)"}">${fmtN(v.n)}</td>`;
     });
     h += `<td class="cnt">${r.k}</td></tr>`;
   });
@@ -579,8 +669,8 @@ function drawProfile() {
   let any = 0, best = null;
   const rows = DOM.map((d) => ({ d, pts: d.years.map((y) => { const { cnt, total } = shares(d.id, y); const n = cnt[c] || 0; if (n) { any++; if (!best || n / total > best.sh) best = { d, y, n, sh: n / total }; } return { y, n, total }; }) }));
   $("#profile-title").textContent = `${C[c].name}: entries in each elite set over time`;
-  if (any) $("#profile-note").textContent = `Circle area shows the country's share of the elite set; a small grey dot means the ranking was published that year but the country had no entry. Largest share: ${pct(best.sh)} of ${best.d.label.toLowerCase()} in ${best.y}.`;
-  else $("#profile-note").textContent = "No entries in any of the ten elite sets.";
+  if (any) $("#profile-note").textContent = `Circle area shows the country's share of the elite set; a small grey dot means the ranking was published that year but the country had no entry. Largest share: ${pct(best.sh)} of ${best.d.label.toLowerCase()} in ${yLab(best.d, best.y)}. † marks additions not in the published paper.`;
+  else $("#profile-note").textContent = `No entries in any of the ${NUMW[DOM.length] || DOM.length} elite sets.`;
   const W = 1080, rowH = 34, ml = 190, mr = 20, mt = 6, H = mt + rowH * DOM.length + 24;
   const x = (y) => ml + (y - 1970) / 55 * (W - ml - mr);
   const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `${C[c].name}: entries by elite set and year` }, host);
@@ -588,17 +678,110 @@ function drawProfile() {
   for (let t = 1970; t <= 2025; t += 5) { el("line", { x1: x(t), x2: x(t), y1: mt, y2: H - 22 }, g); el("text", { x: x(t), y: H - 6, "text-anchor": "middle" }, ax).textContent = t; }
   rows.forEach(({ d, pts }, i) => {
     const cy = mt + rowH * i + rowH / 2;
-    const lab = el("text", { x: 0, y: cy + 4, style: "fill:var(--ink);font-size:13px" }, svg); lab.textContent = d.label;
+    const lab = el("text", { x: 0, y: cy + 4, style: "fill:var(--ink);font-size:13px" }, svg); lab.textContent = d.label + (NEW.has(d.id) ? " †" : "");
     el("line", { x1: x(d.years[0]), x2: x(d.years[d.years.length - 1]), y1: cy, y2: cy, style: "stroke:var(--line)", "stroke-width": 1 }, svg);
     pts.forEach((p) => {
       if (!p.n) { el("circle", { cx: x(p.y), cy, r: 2, style: "fill:var(--axis)" }, svg); return; }
       const r = Math.max(4, Math.sqrt(p.n / p.total) * 26);
       el("circle", { cx: x(p.y), cy, r, style: "fill:var(--seq);stroke:var(--surface)", "stroke-width": 2, "fill-opacity": 0.85 }, svg);
       const hit = el("circle", { class: "hit", cx: x(p.y), cy, r: Math.max(r, 10) }, svg);
-      hit.addEventListener("mousemove", (ev) => showTip(ev, `<div class="h">${esc(C[c].name)}, ${p.y}</div><div class="r">${esc(d.label)}</div><div class="r">${p.n} of ${p.total} ${d.unit} · ${pct(p.n / p.total)}</div>`));
+      hit.addEventListener("mousemove", (ev) => showTip(ev, `<div class="h">${esc(C[c].name)}, ${yLab(d, p.y)}</div><div class="r">${esc(d.label)}</div><div class="r">${fmtN(p.n)} of ${fmtN(p.total)} ${d.unit} · ${pct(p.n / p.total)}</div>`));
       hit.addEventListener("mouseleave", hideTip);
     });
   });
+}
+
+// ---------- Science (Nobel)
+function initScience() {
+  const W = byId.nobel_work, B = byId.nobel_birth;
+  const lastY = W.years[W.years.length - 1], firstY = W.years[0];
+  const usIdx = C.findIndex((c) => c.name === "United States");
+  const usShare = (id, y) => { const sh = shares(id, y); return (sh.cnt[usIdx] || 0) / sh.total; };
+  const F = D.nobel_foreign, fl = F[F.length - 1];
+  $("#sci-facts").innerHTML = [
+    [`${pct(usShare("nobel_work", lastY))} vs ${pct(usShare("nobel_birth", lastY))}`, `of laureates in ${yLab(W, lastY)} worked in, and were born in, the United States.`],
+    [`${f2(W.idx[0].H)} → ${f2(W.idx[W.idx.length - 1].H)}`, `Concentration of where laureates work, ${yLab(W, firstY)} to ${yLab(W, lastY)}. Higher means more concentrated.`],
+    [`${pct(fl[2] / fl[1])}`, `of the ${fl[1]} US-based laureates in ${yLab(W, fl[0])} were born outside the United States.`],
+  ].map(([b, l]) => `<div class="finding"><div class="big">${b}</div><div class="lab">${l}</div></div>`).join("");
+
+  // concentration lines
+  {
+    const host = $("#sci-conc"), Wd = 520, H = 260, ml = 40, mr = 16, mt = 10, mb = 26;
+    const ys = W.years, x = (y) => ml + (y - ys[0]) / (ys[ys.length - 1] - ys[0]) * (Wd - ml - mr), y = (v) => mt + (1 - v / 0.6) * (H - mt - mb);
+    const svg = el("svg", { viewBox: `0 0 ${Wd} ${H}`, width: "100%", role: "img", "aria-label": "Concentration of Nobel laureates by country of work and of birth" }, host);
+    svg.style.display = "block"; svg.style.height = "auto"; svg.style.overflow = "visible";
+    const g = el("g", { class: "grid" }, svg), ax = el("g", { class: "ax" }, svg);
+    [0.2, 0.4, 0.6].forEach((t) => el("line", { x1: ml, x2: Wd - mr, y1: y(t), y2: y(t) }, g));
+    el("line", { class: "base", x1: ml, x2: Wd - mr, y1: y(0), y2: y(0) }, svg);
+    [0, 0.2, 0.4, 0.6].forEach((t) => (el("text", { x: ml - 6, y: y(t) + 4, "text-anchor": "end" }, ax).textContent = f2(t)));
+    ys.forEach((yy, i) => { if (i % 2 === 0) el("text", { x: x(yy), y: H - 6, "text-anchor": "middle" }, ax).textContent = yLab(W, yy); });
+    [[W, "var(--fb-men)", "Where laureates work"], [B, "var(--fb-women)", "Country of birth"]].forEach(([d, col, lab]) => {
+      el("path", { d: d.idx.map((p, i) => `${i ? "L" : "M"}${x(p.year)},${y(p.H)}`).join(""), fill: "none", style: `stroke:${col}`, "stroke-width": 2, "stroke-linejoin": "round" }, svg);
+      d.idx.forEach((p) => {
+        el("circle", { cx: x(p.year), cy: y(p.H), r: 4, style: `fill:${col};stroke:var(--surface)`, "stroke-width": 2 }, svg);
+        const hit = el("circle", { class: "hit", cx: x(p.year), cy: y(p.H), r: 11 }, svg);
+        hit.addEventListener("mousemove", (ev) => showTip(ev, `<div class="h">${lab}, ${yLab(d, p.year)}</div><div class="r">Concentration ${f2(p.H)} · Diversity ${f2(p.S)}</div><div class="r">${p.n} countries · US share ${pct(usShare(d.id, p.year))}</div>`));
+        hit.addEventListener("mouseleave", hideTip);
+      });
+    });
+  }
+  // foreign-born bars
+  {
+    const host = $("#sci-foreign"), Wd = 520, H = 260, ml = 40, mr = 8, mt = 10, mb = 26;
+    const n = F.length, band = (Wd - ml - mr) / n, bw = Math.min(band - 6, 30), y = (v) => mt + (1 - v / 0.6) * (H - mt - mb);
+    const svg = el("svg", { viewBox: `0 0 ${Wd} ${H}`, width: "100%", role: "img", "aria-label": "Share of US-based Nobel laureates born abroad" }, host);
+    svg.style.display = "block"; svg.style.height = "auto";
+    const g = el("g", { class: "grid" }, svg), ax = el("g", { class: "ax" }, svg);
+    [0.2, 0.4, 0.6].forEach((t) => el("line", { x1: ml, x2: Wd - mr, y1: y(t), y2: y(t) }, g));
+    [0, 0.2, 0.4, 0.6].forEach((t) => (el("text", { x: ml - 6, y: y(t) + 4, "text-anchor": "end" }, ax).textContent = pct(t)));
+    F.forEach(([yy, tot, fo], i) => {
+      const cx = ml + band * i + band / 2, v = fo / tot;
+      el("rect", { x: cx - bw / 2, y: y(v), width: bw, height: y(0) - y(v), rx: 3, style: "fill:var(--seq)" }, svg);
+      if (i % 2 === 0) el("text", { x: cx, y: H - 6, "text-anchor": "middle" }, ax).textContent = yLab(W, yy);
+      const hit = el("rect", { class: "hit", x: cx - band / 2, y: mt, width: band, height: H - mt - mb }, svg);
+      hit.addEventListener("mousemove", (ev) => showTip(ev, `<div class="h">${yLab(W, yy)}</div><div class="r">${fo} of ${tot} US-based laureates born abroad · ${pct(v)}</div>`));
+      hit.addEventListener("mouseleave", hideTip);
+    });
+    el("line", { class: "base", x1: ml, x2: Wd - mr, y1: y(0), y2: y(0) }, svg);
+  }
+}
+
+// ---------- Science (most-cited papers)
+function lineChart(host, d, series, hi, ticks, fmt, aria) {
+  const Wd = 520, H = 260, ml = 40, mr = 16, mt = 10, mb = 26, ys = d.years;
+  const x = (yy) => ml + (yy - ys[0]) / (ys[ys.length - 1] - ys[0]) * (Wd - ml - mr), y = (v) => mt + (1 - v / hi) * (H - mt - mb);
+  const svg = el("svg", { viewBox: `0 0 ${Wd} ${H}`, width: "100%", role: "img", "aria-label": aria }, host);
+  svg.style.display = "block"; svg.style.height = "auto"; svg.style.overflow = "visible";
+  const g = el("g", { class: "grid" }, svg), ax = el("g", { class: "ax" }, svg);
+  ticks.forEach((t) => { if (t) el("line", { x1: ml, x2: Wd - mr, y1: y(t), y2: y(t) }, g); el("text", { x: ml - 6, y: y(t) + 4, "text-anchor": "end" }, ax).textContent = fmt(t); });
+  el("line", { class: "base", x1: ml, x2: Wd - mr, y1: y(0), y2: y(0) }, svg);
+  ys.forEach((yy, i) => { if (i % 2 === 0) el("text", { x: x(yy), y: H - 6, "text-anchor": "middle" }, ax).textContent = yy; });
+  series.forEach(({ get, col, lab }) => {
+    el("path", { d: d.idx.map((p, i) => `${i ? "L" : "M"}${x(p.year)},${y(get(p))}`).join(""), fill: "none", style: `stroke:${col}`, "stroke-width": 2, "stroke-linejoin": "round" }, svg);
+    d.idx.forEach((p) => {
+      const lc = lowCov(d, p.year);
+      el("circle", { cx: x(p.year), cy: y(get(p)), r: 4, style: lc ? `fill:var(--surface);stroke:${col}` : `fill:${col};stroke:var(--surface)`, "stroke-width": 2 }, svg);
+      const hit = el("circle", { class: "hit", cx: x(p.year), cy: y(get(p)), r: 11 }, svg);
+      const m = PMETA[p.year];
+      hit.addEventListener("mousemove", (ev) => showTip(ev, `<div class="h">${lab}, ${p.year}</div><div class="r">${fmt(get(p))}</div><div class="r">${m.nc} of ${m.nj} journal articles with country data (${pct(m.cov)})</div>`));
+      hit.addEventListener("mouseleave", hideTip);
+    });
+  });
+}
+function initPapers() {
+  const d = byId.papers_top500; if (!d) return;
+  const a = d.idx[0], b = d.idx[d.idx.length - 1];
+  const share = (name, y) => { const i = C.findIndex((c) => c.name === name), sh = shares(d.id, y); return (sh.cnt[i] || 0) / sh.total; };
+  $("#pap-facts").innerHTML = [
+    [`${pct(share("United States", a.year))} → ${pct(share("United States", b.year))}`, `US share of the most-cited papers, ${a.year}–${b.year}.`],
+    [`${pct(share("China", b.year))}`, `China's share in ${b.year}, up from ${pct(share("China", 2010))} in 2010.`],
+    [`${a.n} → ${b.n}`, `countries with a share of at least one top paper, ${a.year}–${b.year}; ${PMETA[a.year].ge1} → ${PMETA[b.year].ge1} with at least one paper in total.`],
+  ].map(([x, l]) => `<div class="finding"><div class="big">${x}</div><div class="lab">${l}</div></div>`).join("");
+  lineChart($("#pap-idx"), d, [{ get: (p) => p.H, col: "var(--fb-men)", lab: "Concentration" }, { get: (p) => p.S, col: "var(--fb-women)", lab: "Diversity" }],
+    0.6, [0, 0.2, 0.4, 0.6], f2, "Concentration and diversity of the 500 most-cited papers by authors' country, 1970 to 2020");
+  lineChart($("#pap-n"), d, [{ get: (p) => p.n, col: "var(--fb-men)", lab: "Countries with any share" }, { get: (p) => PMETA[p.year].ge1, col: "var(--fb-women)", lab: "Countries with at least one paper" }],
+    90, [0, 30, 60, 90], (v) => String(Math.round(v)), "Number of countries among the authors of the 500 most-cited papers, 1970 to 2020");
+  $("#pap-note").textContent = "Hollow markers: 1970–1990, when fewer than 80 percent of the papers have country data in OpenAlex. Concentration and diversity are adjusted for the number of countries in the world, as for the other elite sets.";
 }
 
 // ---------- 4. Football
@@ -656,8 +839,8 @@ function drawFootball() {
 function csv(rows) { return rows.map((r) => r.map((v) => { const s = v == null ? "" : String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }).join(",")).join("\n") + "\n"; }
 function buildCSV(kind) {
   if (kind === "entries") {
-    const out = [["domain", "year", "rank", "name", "location", "country", "region"]];
-    DOM.forEach((d) => d.years.forEach((y) => D.entries[d.id][y].forEach((e) => out.push([d.id, y, e[0], e[1], e[2], C[e[3]].name, C[e[3]].region]))));
+    const out = [["domain", "year", "rank", "name", "location", "country", "region", "weight"]];
+    DOM.forEach((d) => d.years.forEach((y) => D.entries[d.id][y].forEach((e) => out.push([d.id, y, e[0], e[1], e[2], C[e[3]].name, C[e[3]].region, e[4] ?? 1]))));
     return out;
   }
   if (kind === "indices") {
